@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JLPT N4 語彙テスト</title>
+    <title>JLPT N4 語彙テスト & 誤答リスト</title>
     <style>
         body { 
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif; 
             background-color: #f0f2f5; margin: 0; padding: 20px; color: #333;
-            /* 禁止文字选择 */
             user-select: none; -webkit-user-select: none;
         }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #1a2a6c; border-bottom: 2px solid #1a2a6c; padding-bottom: 10px; }
         .info-section, .quiz-section, .result-section { display: none; }
         .active { display: block; }
+        
+        /* 入力エリア */
         input[type="text"] { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button#startBtn { width: 100%; padding: 14px; background-color: #1a2a6c; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        button { width: 100%; padding: 14px; background-color: #1a2a6c; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        
+        /* クイズエリア */
         .question-text { font-size: 20px; font-weight: bold; color: #000; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-left: 5px solid #1a2a6c; }
         .option-btn { 
             display: block; width: 100%; padding: 16px; margin: 12px 0; text-align: left; 
@@ -25,8 +28,15 @@
             cursor: pointer; font-size: 18px; font-weight: 600; transition: 0.2s;
         }
         .option-btn:hover { background: #333; color: #fff; }
-        .progress { font-size: 16px; color: #666; margin-bottom: 10px; }
-        /* 仅在真正切换标签时显示的遮罩 */
+        
+        /* 誤答リスト（错题本）样式 */
+        .wrong-record-section { margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px; }
+        .wrong-tier { margin-bottom: 20px; padding: 15px; border-radius: 8px; }
+        .tier-1 { background-color: #fff3cd; border: 1px solid #ffeeba; } /* 1次错误：淡黄 */
+        .tier-2 { background-color: #f8d7da; border: 1px solid #f5c6cb; } /* 2次错误：淡红 */
+        .tier-3 { background-color: #721c24; color: white; border: 1px solid #491217; } /* 3次：深红 */
+        .wrong-item { margin-bottom: 10px; font-size: 14px; padding: 5px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        
         #cheatOverlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); color: white; z-index: 9999;
@@ -39,28 +49,50 @@
 <div id="cheatOverlay">
     <h1 style="color: #ff4d4d;">【失格】タブの切り替えを検知</h1>
     <p>テスト中に他のページを確認したため、この回答は無効です。</p>
-    <button onclick="location.reload()" style="width:200px; background:#fff; color:#000;">トップに戻る</button>
+    <button onclick="location.reload()" style="width:200px; background:#fff; color:#000;">戻る</button>
 </div>
 
 <div class="container">
-    <h1>N4語彙 310問テスト</h1>
+    <h1>N4語彙テスト & 誤答管理</h1>
+
     <div id="setup" class="info-section active">
         <p>氏名を入力してください：</p>
         <input type="text" id="userName" placeholder="例：田中 太郎">
-        <p style="color:#d9534f; font-size: 14px; font-weight: bold;">※禁止事項：タブを切り替えるとテストが終了します。</p>
-        <button id="startBtn" onclick="startQuiz()">テスト開始</button>
+        <button onclick="startQuiz()">テスト開始 (20問)</button>
+        <button onclick="showHistoryOnly()" style="background-color: #6c757d;">過去の誤答を確認する</button>
     </div>
+
     <div id="quiz" class="quiz-section">
-        <div class="progress">問題 <span id="currentNum">1</span> / 20</div>
-        <div class="question-text" id="qText"></div>
+        <div id="qText" class="question-text"></div>
         <div id="optionsArea"></div>
     </div>
+
     <div id="result" class="result-section">
         <div style="text-align: center;">
             <h2>テスト結果</h2>
+            <div id="scoreDisplay" style="font-size: 48px; color: #d9534f; font-weight: bold;"></div>
             <p id="resInfo"></p>
-            <div style="font-size: 60px; color: #d9534f; font-weight: bold;" id="scoreDisplay"></div>
-            <button onclick="location.reload()" style="margin-top:20px;">もう一度受ける</button>
+            <button onclick="location.reload()">再挑戦</button>
+            <button onclick="clearHistory()" style="background-color: #dc3545; font-size: 12px; margin-top: 20px;">全履歴を削除する</button>
+        </div>
+
+        <div class="wrong-record-section">
+            <h3 style="text-align: center;">📊 誤答分析 (これまでの記録)</h3>
+            
+            <div id="tier3" class="wrong-tier tier-3">
+                <strong>【要注意】3回以上間違えた問題：</strong>
+                <div id="list3">なし</div>
+            </div>
+            
+            <div id="tier2" class="wrong-tier tier-2">
+                <strong>【復習】2回間違えた問題：</strong>
+                <div id="list2">なし</div>
+            </div>
+            
+            <div id="tier1" class="wrong-tier tier-1">
+                <strong>【確認】1回間違えた問題：</strong>
+                <div id="list1">なし</div>
+            </div>
         </div>
     </div>
 </div>
@@ -72,7 +104,7 @@
     let score = 0;
     let isTesting = false;
 
-    // --- 优化的防作弊：仅检测标签页可见性 ---
+    // 页面可见性检测（防作弊）
     document.addEventListener('visibilitychange', function() {
         if (isTesting && document.visibilityState === 'hidden') {
             isTesting = false;
@@ -80,18 +112,10 @@
         }
     });
 
-    // 禁止 F12 和常用开发者工具快捷键
-    document.onkeydown = function(e) {
-        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
-            return false;
-        }
-    };
-
+    // 开始考试
     function startQuiz() {
         const name = document.getElementById('userName').value;
-        if (!name) { alert("お名前を入力してください"); return; }
-        if (typeof allQuestions === 'undefined') { alert("Error: questions.js not found!"); return; }
-
+        if (!name) { alert("氏名を入力してください"); return; }
         isTesting = true;
         currentQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 20);
         document.getElementById('setup').classList.remove('active');
@@ -99,34 +123,90 @@
         showQuestion();
     }
 
+    // 仅查看记录
+    function showHistoryOnly() {
+        document.getElementById('setup').classList.remove('active');
+        document.getElementById('result').classList.add('active');
+        renderWrongList();
+    }
+
     function showQuestion() {
         const q = currentQuestions[currentIndex];
-        document.getElementById('currentNum').innerText = currentIndex + 1;
-        document.getElementById('qText').innerText = q.question;
-        const optionsDiv = document.getElementById('optionsArea');
-        optionsDiv.innerHTML = '';
-        q.options.forEach((opt, index) => {
+        document.getElementById('qText').innerText = `${currentIndex + 1}. ${q.question}`;
+        const optionsArea = document.getElementById('optionsArea');
+        optionsArea.innerHTML = '';
+        q.options.forEach((opt, i) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
-            btn.innerText = (index + 1) + ". " + opt;
-            btn.onclick = () => checkAnswer(index);
-            optionsDiv.appendChild(btn);
+            btn.innerText = (i + 1) + ". " + opt;
+            btn.onclick = () => handleAnswer(i);
+            optionsArea.appendChild(btn);
         });
     }
 
-    function checkAnswer(selected) {
-        if (selected === currentQuestions[currentIndex].answer) score++;
+    function handleAnswer(choice) {
+        const q = currentQuestions[currentIndex];
+        if (choice === q.answer) {
+            score++;
+        } else {
+            saveWrongAnswer(q); // 记录错题
+        }
         currentIndex++;
-        if (currentIndex < 20) { showQuestion(); } else { showResult(); }
+        if (currentIndex < 20) showQuestion(); else finishQuiz();
     }
 
-    function showResult() {
+    // 保存错题逻辑
+    function saveWrongAnswer(questionObj) {
+        let history = JSON.parse(localStorage.getItem('jlpt_wrong_history') || '{}');
+        const qKey = questionObj.question; // 以题目内容作为Key
+        
+        if (!history[qKey]) {
+            history[qKey] = { count: 1, text: questionObj.question, ans: questionObj.options[questionObj.answer] };
+        } else {
+            history[qKey].count += 1;
+        }
+        localStorage.setItem('jlpt_wrong_history', JSON.stringify(history));
+    }
+
+    function finishQuiz() {
         isTesting = false;
         document.getElementById('quiz').classList.remove('active');
         document.getElementById('result').classList.add('active');
-        const now = new Date();
-        document.getElementById('resInfo').innerHTML = `氏名：${document.getElementById('userName').value}<br>日時：${now.toLocaleString()}`;
         document.getElementById('scoreDisplay').innerText = `${score} / 20`;
+        const now = new Date();
+        document.getElementById('resInfo').innerText = `受験者: ${document.getElementById('userName').value} | 日時: ${now.toLocaleString()}`;
+        renderWrongList();
+    }
+
+    // 渲染错题本
+    function renderWrongList() {
+        const history = JSON.parse(localStorage.getItem('jlpt_wrong_history') || '{}');
+        const lists = { 1: document.getElementById('list1'), 2: document.getElementById('list2'), 3: document.getElementById('list3') };
+        Object.values(lists).forEach(l => l.innerHTML = '');
+
+        let hasData = [false, false, false, false];
+
+        for (const key in history) {
+            const item = history[key];
+            const div = document.createElement('div');
+            div.className = 'wrong-item';
+            div.innerHTML = `<strong>問:</strong> ${item.text}<br><span style="color:blue"><strong>正解:</strong> ${item.ans}</span> (ミス: ${item.count}回)`;
+            
+            if (item.count === 1) { lists[1].appendChild(div); hasData[1] = true; }
+            else if (item.count === 2) { lists[2].appendChild(div); hasData[2] = true; }
+            else if (item.count >= 3) { lists[3].appendChild(div); hasData[3] = true; }
+        }
+
+        if(!hasData[1]) lists[1].innerText = 'なし';
+        if(!hasData[2]) lists[2].innerText = 'なし';
+        if(!hasData[3]) lists[3].innerText = 'なし';
+    }
+
+    function clearHistory() {
+        if(confirm("全ての学習履歴を削除しますか？")) {
+            localStorage.removeItem('jlpt_wrong_history');
+            renderWrongList();
+        }
     }
 </script>
 </body>
