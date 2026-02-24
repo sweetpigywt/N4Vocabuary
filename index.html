@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N4 語彙テスト</title>
+    <style>
+        body { 
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif; 
+            background-color: #f0f2f5; margin: 0; padding: 20px; color: #333;
+            /* 禁止文字选择 */
+            user-select: none; -webkit-user-select: none;
+        }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1a2a6c; border-bottom: 2px solid #1a2a6c; padding-bottom: 10px; }
+        .info-section, .quiz-section, .result-section { display: none; }
+        .active { display: block; }
+        input[type="text"] { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button#startBtn { width: 100%; padding: 14px; background-color: #1a2a6c; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        .question-text { font-size: 20px; font-weight: bold; color: #000; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-left: 5px solid #1a2a6c; }
+        .option-btn { 
+            display: block; width: 100%; padding: 16px; margin: 12px 0; text-align: left; 
+            background: #ffffff; border: 2px solid #333; color: #000; border-radius: 8px; 
+            cursor: pointer; font-size: 18px; font-weight: 600; transition: 0.2s;
+        }
+        .option-btn:hover { background: #333; color: #fff; }
+        .progress { font-size: 16px; color: #666; margin-bottom: 10px; }
+        /* 仅在真正切换标签时显示的遮罩 */
+        #cheatOverlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); color: white; z-index: 9999;
+            text-align: center; justify-content: center; align-items: center; flex-direction: column;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false">
+
+<div id="cheatOverlay">
+    <h1 style="color: #ff4d4d;">【失格】タブの切り替えを検知</h1>
+    <p>テスト中に他のページを確認したため、この回答は無効です。</p>
+    <button onclick="location.reload()" style="width:200px; background:#fff; color:#000;">トップに戻る</button>
+</div>
+
+<div class="container">
+    <h1>N4語彙 310問テスト</h1>
+    <div id="setup" class="info-section active">
+        <p>氏名を入力してください：</p>
+        <input type="text" id="userName" placeholder="例：田中 太郎">
+        <p style="color:#d9534f; font-size: 14px; font-weight: bold;">※禁止事項：タブを切り替えるとテストが終了します。</p>
+        <button id="startBtn" onclick="startQuiz()">テスト開始</button>
+    </div>
+    <div id="quiz" class="quiz-section">
+        <div class="progress">問題 <span id="currentNum">1</span> / 20</div>
+        <div class="question-text" id="qText"></div>
+        <div id="optionsArea"></div>
+    </div>
+    <div id="result" class="result-section">
+        <div style="text-align: center;">
+            <h2>テスト結果</h2>
+            <p id="resInfo"></p>
+            <div style="font-size: 60px; color: #d9534f; font-weight: bold;" id="scoreDisplay"></div>
+            <button onclick="location.reload()" style="margin-top:20px;">もう一度受ける</button>
+        </div>
+    </div>
+</div>
+
+<script src="questions.js"></script>
+<script>
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let isTesting = false;
+
+    // --- 优化的防作弊：仅检测标签页可见性 ---
+    document.addEventListener('visibilitychange', function() {
+        if (isTesting && document.visibilityState === 'hidden') {
+            isTesting = false;
+            document.getElementById('cheatOverlay').style.display = 'flex';
+        }
+    });
+
+    // 禁止 F12 和常用开发者工具快捷键
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
+            return false;
+        }
+    };
+
+    function startQuiz() {
+        const name = document.getElementById('userName').value;
+        if (!name) { alert("お名前を入力してください"); return; }
+        if (typeof allQuestions === 'undefined') { alert("Error: questions.js not found!"); return; }
+
+        isTesting = true;
+        currentQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 20);
+        document.getElementById('setup').classList.remove('active');
+        document.getElementById('quiz').classList.add('active');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = currentQuestions[currentIndex];
+        document.getElementById('currentNum').innerText = currentIndex + 1;
+        document.getElementById('qText').innerText = q.question;
+        const optionsDiv = document.getElementById('optionsArea');
+        optionsDiv.innerHTML = '';
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = (index + 1) + ". " + opt;
+            btn.onclick = () => checkAnswer(index);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected) {
+        if (selected === currentQuestions[currentIndex].answer) score++;
+        currentIndex++;
+        if (currentIndex < 20) { showQuestion(); } else { showResult(); }
+    }
+
+    function showResult() {
+        isTesting = false;
+        document.getElementById('quiz').classList.remove('active');
+        document.getElementById('result').classList.add('active');
+        const now = new Date();
+        document.getElementById('resInfo').innerHTML = `氏名：${document.getElementById('userName').value}<br>日時：${now.toLocaleString()}`;
+        document.getElementById('scoreDisplay').innerText = `${score} / 20`;
+    }
+</script>
+</body>
+</html>
