@@ -123,14 +123,14 @@
                 <option value="SP13">SP13</option>
             </select>
         </div>
-        <button onclick="initExam()">测试开始</button>
-        <button onclick="showHistory()" style="background:#555;">错题查看</button>
-        <button onclick="window.open('https://docs.google.com/spreadsheets/d/1h6CudBvYWLorOfHtO42nja--t2A1pWO1H8XnRts1PpA/edit?gid=0#gid=0')" style="background:#777; font-size:12px;">排行榜</button>
+        <button onclick="initExam()">テスト開始</button>
+        <button onclick="showHistory()" style="background:#555;">間違い問題</button>
+        <button onclick="window.open('https://docs.google.com/spreadsheets/d/1h6CudBvYWLorOfHtO42nja--t2A1pWO1H8XnRts1PpA/edit?gid=0#gid=0')" style="background:#777; font-size:12px;">ランキング</button>
     </div>
 
     <div id="quiz" class="container hidden">
         <div class="info-header">
-            <span id="quiz-user-info">班级 | 姓名</span>
+            <span id="quiz-user-info">クラス | 名前</span>
             <span id="q-number">Q1 / 20</span>
         </div>
         <div class="progress-container"><div class="progress-bar" id="p-bar"></div></div>
@@ -139,11 +139,11 @@
     </div>
 
     <div id="result" class="container hidden">
-        <h2>测试结果</h2>
+        <h2>テスト結果</h2>
         <div id="result-meta" class="result-meta"></div>
         <div class="score-big" id="final-score">0 / 20</div>
         <div class="analysis-scroll" id="analysis-list"></div>
-        <button onclick="location.reload()" style="margin-top:20px;">返回首页</button>
+        <button onclick="location.reload()" style="margin-top:20px;">HPへ戻る</button>
     </div>
 
     <div id="history" class="container hidden">
@@ -159,8 +159,8 @@
 
     <div id="cheat-overlay" class="hidden">
         <h1 class="cheat-title">失格</h1>
-        <p style="font-size: 20px; text-align: center;">检测到切屏行为，测试已终止。</p>
-        <button onclick="location.reload()" style="width: 200px; background: white; color: black;">返回</button>
+        <p style="font-size: 20px; text-align: center;">Cheating!!!</p>
+        <button onclick="location.reload()" style="width: 200px; background: white; color: black;">Back</button>
     </div>
 
     <div id="loader" class="loader-wrap hidden">
