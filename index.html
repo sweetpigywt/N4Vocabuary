@@ -25,6 +25,7 @@
             margin: 0; min-height: 100vh;
             display: flex; justify-content: center; align-items: center;
             color: var(--text-main);
+            /* 禁止文字选择 */
             -webkit-user-select: none; user-select: none;
             overflow-x: hidden;
         }
@@ -42,6 +43,7 @@
 
         .hidden { display: none !important; }
 
+        /* UI Elements */
         h1, h2, h3 { color: var(--accent); margin-top: 0; }
         .input-group { text-align: left; margin-bottom: 20px; }
         label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #555; }
@@ -49,7 +51,7 @@
         input, select {
             width: 100%; padding: 12px; border: 2px solid #eee;
             border-radius: 10px; font-size: 16px; transition: 0.3s;
-            -webkit-user-select: text; user-select: text;
+            -webkit-user-select: text; user-select: text; /* 允许输入框输入 */
         }
         input:focus { border-color: var(--accent); outline: none; }
 
@@ -59,32 +61,37 @@
             cursor: pointer; margin-top: 10px; transition: all 0.2s;
         }
         button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 5px 15px rgba(72, 52, 212, 0.3); }
+        button:active { transform: scale(0.98); }
 
+        /* Quiz UI */
         .progress-container { width: 100%; height: 8px; background: #eee; border-radius: 10px; margin: 20px 0; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.4s ease; }
         .info-header { display: flex; justify-content: space-between; font-size: 13px; color: #666; font-weight: bold; }
         .question-text { font-size: 18px; font-weight: bold; margin: 25px 0; text-align: left; line-height: 1.6; }
-        
         .option-btn {
             background: #fff; color: var(--text-main); border: 2px solid #eee;
             text-align: left; margin-bottom: 12px; font-weight: normal;
         }
         .option-btn:hover { border-color: var(--accent); background: #f8f9ff; }
 
+        /* Result UI */
         .score-big { font-size: 64px; font-weight: bold; color: var(--accent); margin: 10px 0; }
         .result-meta { font-size: 14px; color: #666; margin-bottom: 20px; }
         .analysis-scroll { max-height: 350px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px; text-align: left; padding: 10px; }
         .analysis-card { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .analysis-card:last-child { border-bottom: none; }
         .tag { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
         .tag-correct { background: #e3f9eb; color: var(--success); }
         .tag-wrong { background: #fee2e2; color: var(--error); }
 
+        /* History Tabs */
         .tab-box { display: flex; gap: 5px; margin-bottom: 15px; }
         .tab-btn { flex: 1; padding: 10px; font-size: 12px; background: #eee; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .tab-btn.active { background: var(--accent); color: white; }
         .history-list { max-height: 400px; overflow-y: auto; text-align: left; }
         .history-item { padding: 12px; background: white; margin-bottom: 10px; border-radius: 10px; border-left: 5px solid var(--accent); font-size: 14px; }
 
+        /* Cheat Overlay */
         #cheat-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.98); color: white; z-index: 9999;
@@ -92,6 +99,7 @@
         }
         .cheat-title { font-size: 80px; color: var(--error); margin: 0; }
 
+        /* Loader */
         .spinner {
             border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid var(--accent);
             border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
@@ -124,56 +132,58 @@
             </select>
         </div>
         <button onclick="initExam()">テスト開始</button>
-        <button onclick="showHistory()" style="background:#555;">間違い問題</button>
-        <button onclick="window.open('https://docs.google.com/spreadsheets/d/1h6CudBvYWLorOfHtO42nja--t2A1pWO1H8XnRts1PpA/edit?gid=0#gid=0')" style="background:#777; font-size:12px;">ランキング</button>
+        <button onclick="showHistory()" style="background:#555;">間違えた問題を確認</button>
+        <button onclick="window.open('https://docs.google.com/spreadsheets/d/1h6CudBvYWLorOfHtO42nja--t2A1pWO1H8XnRts1PpA/edit?gid=0#gid=0')" style="background:#777; font-size:12px;">ランキングを表示</button>
     </div>
 
     <div id="quiz" class="container hidden">
         <div class="info-header">
-            <span id="quiz-user-info">クラス | 名前</span>
+            <span id="quiz-user-info">クラス | 氏名</span>
             <span id="q-number">Q1 / 20</span>
         </div>
         <div class="progress-container"><div class="progress-bar" id="p-bar"></div></div>
-        <div class="question-text" id="q-text"></div>
+        <div class="question-text" id="q-text">问题文が表示されます</div>
         <div id="options-area"></div>
     </div>
 
     <div id="result" class="container hidden">
-        <h2>テスト結果</h2>
+        <h2>結果発表</h2>
         <div id="result-meta" class="result-meta"></div>
         <div class="score-big" id="final-score">0 / 20</div>
         <div class="analysis-scroll" id="analysis-list"></div>
-        <button onclick="location.reload()" style="margin-top:20px;">HPへ戻る</button>
+        <button onclick="location.reload()" style="margin-top:20px;">ホームへ戻る</button>
     </div>
 
     <div id="history" class="container hidden">
         <h3>弱点分析</h3>
         <div class="tab-box">
-            <div class="tab-btn active" id="tab-3" onclick="renderHistory(3)">🔥 3回及以上</div>
+            <div class="tab-btn active" id="tab-3" onclick="renderHistory(3)">🔥 3回以上</div>
             <div class="tab-btn" id="tab-2" onclick="renderHistory(2)">⚠️ 2回</div>
             <div class="tab-btn" id="tab-1" onclick="renderHistory(1)">📖 1回</div>
         </div>
         <div id="history-content" class="history-list"></div>
-        <button onclick="location.reload()" style="margin-top:15px; background:#555;">返回</button>
+        <button onclick="location.reload()" style="margin-top:15px; background:#555;">戻る</button>
     </div>
 
     <div id="cheat-overlay" class="hidden">
         <h1 class="cheat-title">失格</h1>
-        <p style="font-size: 20px; text-align: center;">Cheating!!!</p>
-        <button onclick="location.reload()" style="width: 200px; background: white; color: black;">Back</button>
+        <p style="font-size: 20px; text-align: center;">テスト中に画面を切り替えました。<br>このテストは無効です。</p>
+        <button onclick="location.reload()" style="width: 200px; background: white; color: black;">戻る</button>
     </div>
 
     <div id="loader" class="loader-wrap hidden">
         <div class="spinner"></div>
-        <p style="margin-top:15px; font-weight:bold; color:var(--accent);">数据上传中...</p>
+        <p style="margin-top:15px; font-weight:bold; color:var(--accent);">データを送信中...</p>
     </div>
 
     <script src="questions_n4.js"></script>
 
     <script>
+        // ================= CONFIG & DATA =================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwREfW1TphcbB9ZJLeEiM3SsS_GT5KrObR4dhcDRnfySmbxKGe23FWvBMTcX52HXJ_Czw/exec";
         const QUESTIONS_TO_DRAW = 20;
 
+        // ================= STATE =================
         let examPool = [];
         let currentIdx = 0;
         let score = 0;
@@ -181,21 +191,27 @@
         let examResults = [];
         let userInfo = {};
 
-        function initExam() {
-            // 这里的 allQuestions 必须存在于 questions_n4.js 中
-            if (typeof allQuestions === 'undefined') {
-                alert("未发现题库文件，请确保 questions_n4.js 已正确上传至 GitHub 且与 index.html 在同一文件夹下。");
-                return;
-            }
+        // ================= LOGIC =================
 
+        // 洗牌算法：确保题目抽取完全随机
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initExam() {
             userInfo.name = document.getElementById('user-name').value.trim();
             userInfo.id = document.getElementById('user-id').value.trim();
             userInfo.cls = document.getElementById('user-cls').value;
 
-            if (!userInfo.name || !userInfo.id) return alert("请输入完整的姓名和学号。");
+            if (!userInfo.name || !userInfo.id) return alert("情報を正しく入力してください。");
 
-            // 全局题库随机抽取
-            examPool = [...allQuestions].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_TO_DRAW);
+            // 从外部 JS 文件的 QUESTIONS_N4 中随机抽取 20 题
+            const shuffledAll = shuffle([...QUESTIONS_N4]); 
+            examPool = shuffledAll.slice(0, QUESTIONS_TO_DRAW);
             
             currentIdx = 0;
             score = 0;
@@ -212,14 +228,17 @@
             const q = examPool[currentIdx];
             document.getElementById('q-number').innerText = `Q${currentIdx + 1} / ${examPool.length}`;
             document.getElementById('p-bar').style.width = `${((currentIdx) / examPool.length) * 100}%`;
-            document.getElementById('q-text').innerText = q.question;
+            
+            // 样式处理：将 _______ 替换为可视化的问号
+            const qText = document.getElementById('q-text');
+            qText.innerHTML = q.text.replace('_______', '<span style="color:var(--accent); border-bottom:2px solid; padding:0 10px;">?</span>');
 
             const area = document.getElementById('options-area');
             area.innerHTML = '';
             q.options.forEach((opt, i) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.innerText = opt;
+                btn.innerText = (i + 1) + ". " + opt;
                 btn.onclick = () => selectOption(i);
                 area.appendChild(btn);
             });
@@ -227,23 +246,24 @@
 
         function selectOption(idx) {
             const q = examPool[currentIdx];
-            const isCorrect = (idx === q.answer);
+            const isCorrect = (idx === q.ans);
             if (isCorrect) score++;
 
             examResults.push({
-                question: q.question,
+                question: q.text,
                 options: q.options,
-                correctIdx: q.answer,
+                correctIdx: q.ans,
                 userSelect: idx,
                 isCorrect: isCorrect
             });
 
+            // 错题集逻辑
             if (!isCorrect) {
                 let wrongList = JSON.parse(localStorage.getItem('N4_WRONG_LIST') || '{}');
-                if (!wrongList[q.question]) {
-                    wrongList[q.question] = { text: q.question, ans: q.options[q.answer], count: 1 };
+                if (!wrongList[q.text]) {
+                    wrongList[q.text] = { text: q.text, ans: q.options[q.ans], count: 1 };
                 } else {
-                    wrongList[q.question].count += 1;
+                    wrongList[q.text].count += 1;
                 }
                 localStorage.setItem('N4_WRONG_LIST', JSON.stringify(wrongList));
             }
@@ -274,8 +294,8 @@
                 <div class="analysis-card">
                     <span class="tag ${r.isCorrect ? 'tag-correct' : 'tag-wrong'}">${r.isCorrect ? '○ 正解' : '× 不正解'}</span><br>
                     <b>Q${i+1}. ${r.question}</b><br>
-                    <small>你的回答: ${r.options[r.userSelect]}</small><br>
-                    <small style="color:var(--success)">正确答案: ${r.options[r.correctIdx]}</small>
+                    <small>あなたの回答: ${r.options[r.userSelect]}</small><br>
+                    <small style="color:var(--success)">正しい回答: ${r.options[r.correctIdx]}</small>
                 </div>
             `).join('');
 
@@ -293,6 +313,7 @@
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
+                    cache: 'no-cache',
                     body: JSON.stringify(payload)
                 });
             } catch (e) { console.error("Submit error:", e); }
@@ -300,6 +321,7 @@
             document.getElementById('loader').classList.add('hidden');
         }
 
+        // ================= HISTORY =================
         function showHistory() {
             document.getElementById('setup').classList.add('hidden');
             document.getElementById('history').classList.remove('hidden');
@@ -321,18 +343,19 @@
             });
 
             if (filtered.length === 0) {
-                list.innerHTML = "<p style='text-align:center; color:#999; padding-top:20px;'>暂无记录</p>";
+                list.innerHTML = "<p style='text-align:center; color:#999; padding-top:20px;'>データがありません。</p>";
                 return;
             }
 
             filtered.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'history-item';
-                div.innerHTML = `<b>${item.text}</b><br><small>正确答案: ${item.ans}</small><br><small style="color:var(--error)">错误次数: ${item.count}次</small>`;
+                div.innerHTML = `<b>${item.text}</b><br><small>正解: ${item.ans}</small><br><small style="color:var(--error)">ミス回数: ${item.count}回</small>`;
                 list.appendChild(div);
             });
         }
 
+        // ================= ANTI-CHEAT =================
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === 'hidden' && quizActive) {
                 quizActive = false;
@@ -340,6 +363,7 @@
                 document.getElementById('cheat-overlay').classList.remove('hidden');
             }
         });
+
     </script>
 </body>
 </html>
